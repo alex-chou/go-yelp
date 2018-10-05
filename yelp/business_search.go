@@ -2,6 +2,8 @@ package yelp
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
 	"net/url"
 )
 
@@ -10,11 +12,14 @@ func (c *client) BusinessSearch(bso *BusinessSearchOptions) (*BusinessSearchResu
 	if !bso.IsValid() {
 		return nil, errors.New("BusinessSearchOptions provided is not valid. Please see yelp/business_search.go for more details.")
 	}
+	var respBody BusinessSearchResults
+	_, err := c.authedDo(http.MethodGet, businessSearchURL(bso), nil, nil, &respBody)
+	return &respBody, err
+}
 
-	respBody := &BusinessSearchResults{}
-	url := apiHost + businessSearchPath + "?" + bso.URLValues().Encode()
-	_, err := c.authedDo("GET", url, nil, nil, respBody)
-	return respBody, err
+// businessSearchURl returns the business search URL.
+func businessSearchURL(bso *BusinessSearchOptions) string {
+	return fmt.Sprintf("%s%s?%s", apiHost, businessSearchPath, bso.URLValues().Encode())
 }
 
 // BusinessSearchOptions contains the available parameters for the Business Search API.

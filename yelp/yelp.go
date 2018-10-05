@@ -2,7 +2,10 @@ package yelp
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -57,6 +60,15 @@ func (c *client) authedDo(method string, url string, body io.Reader, headers map
 			log.Print(err)
 		}
 	}()
+
+	// return an error for non-2xx status codes
+	if resp.StatusCode >= 300 {
+		errString := fmt.Sprintf("%d %s", resp.StatusCode, http.StatusText(resp.StatusCode))
+		if respBytes, err := ioutil.ReadAll(resp.Body); err == nil {
+			return nil, fmt.Errorf("%s: %s", errString, string(respBytes))
+		}
+		return nil, errors.New(errString)
+	}
 
 	err = json.NewDecoder(resp.Body).Decode(v)
 	return resp, err

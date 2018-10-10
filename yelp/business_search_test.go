@@ -98,8 +98,34 @@ func TestIsValid(t *testing.T) {
 }
 
 func TestURLValues(t *testing.T) {
+	var options *BusinessSearchOptions
+	t.Run("BusinessSearchOptions is nil", func(t *testing.T) {
+		options = nil
+		if len(options.URLValues()) != 0 {
+			t.Fatal("Nil options should return empty url values.")
+		}
+	})
+
+	t.Run("Only location is set", func(t *testing.T) {
+		options = &BusinessSearchOptions{
+			Location: StringPointer("Kalos"),
+		}
+		if location := options.URLValues().Get("location"); location != "Kalos" {
+			t.Fatalf("Location: Expected \"%s\" to equal Kalos", location)
+		}
+	})
+
+	t.Run("Only open_at is set", func(t *testing.T) {
+		options = &BusinessSearchOptions{
+			OpenAt: Int64Pointer(int64(time.Now().Second())),
+		}
+		if openAt := options.URLValues().Get("open_at"); openAt != IntString(*options.OpenAt) {
+			t.Fatalf("Location: Expected \"%s\" to equal %d", openAt, *options.OpenAt)
+		}
+	})
+
 	t.Run("All url.Values are set correctly", func(t *testing.T) {
-		options := BusinessSearchOptions{
+		options = &BusinessSearchOptions{
 			Coordinates: &Coordinates{
 				Longitude: 132.231,
 				Latitude:  123.57,
@@ -116,25 +142,26 @@ func TestURLValues(t *testing.T) {
 			OpenAt:     Int64Pointer(int64(time.Now().Second())),
 			Attributes: StringPointer("hot_and_new"),
 		}
+
 		vals := options.URLValues()
 		for k, _ := range vals {
 			v := vals.Get(k)
 			switch k {
 			case "longitude":
 				if v != "132.231" {
-					t.Fatalf("Longitude: Expected %s to equal 132.231.", v)
+					t.Fatalf("Longitude: Expected %s to equal 132.231", v)
 				}
 			case "latitude":
 				if v != "123.57" {
-					t.Fatalf("Latitude: Expected %s to equal 123.57.", v)
+					t.Fatalf("Latitude: Expected %s to equal 123.57", v)
 				}
 			case "location":
 				if v != "" {
-					t.Fatalf("Location: Expected \"%s\" to equal \"\".", v)
+					t.Fatalf("Location: Expected \"%s\" to equal \"\"", v)
 				}
 			case "term":
 				if v != "restaurants" {
-					t.Fatalf("Term: Expected \"%s\" to equal \"restaurants\".", v)
+					t.Fatalf("Term: Expected \"%s\" to equal \"restaurants\"", v)
 				}
 			}
 		}

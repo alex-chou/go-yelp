@@ -17,7 +17,7 @@ func (c *client) BusinessSearch(bso *BusinessSearchOptions) (*BusinessSearchResu
 	return &respBody, err
 }
 
-// businessSearchURl returns the business search URL.
+// businessSearchURL returns the business search URL.
 func businessSearchURL(bso *BusinessSearchOptions) string {
 	return fmt.Sprintf("%s%s?%s", apiHost, businessSearchPath, bso.URLValues().Encode())
 }

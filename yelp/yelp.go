@@ -11,14 +11,6 @@ import (
 	"net/url"
 )
 
-const (
-	// apiHost is the base URL for the Yelp API
-	apiHost = "https://api.yelp.com"
-
-	// businessSearchPath is the path to search for businesses
-	businessSearchPath = "/v3/businesses/search"
-)
-
 // Client defines the current available Yelp API requests that can be made.
 type Client interface {
 	BusinessSearch(*BusinessSearchOptions) (BusinessSearchResults, error)
@@ -28,20 +20,22 @@ type Client interface {
 type client struct {
 	*http.Client
 	apiKey string
+	host   string
 }
 
-// New returns a new Yelp client.
+// New returns a new Yelp client. The default host is https://api.yelp.com.
 func New(c *http.Client, apiKey string) *client {
 	return &client{
 		Client: c,
 		apiKey: apiKey,
+		host:   "https://api.yelp.com",
 	}
 }
 
 // authedDo sets the Authorization header to the api key provided to the client .
 // The response is decoded into v.
-func (c *client) authedDo(method string, url string, body io.Reader, headers map[string]string, v interface{}) (*http.Response, error) {
-	req, err := http.NewRequest(method, url, body)
+func (c *client) authedDo(method string, path string, body io.Reader, headers map[string]string, v interface{}) (*http.Response, error) {
+	req, err := http.NewRequest(method, fmt.Sprintf("%s%s", c.host, path), body)
 	if err != nil {
 		return nil, err
 	}

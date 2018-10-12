@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"testing"
 )
 
 // testMocks contains the mocks created for testing.
@@ -26,4 +27,18 @@ func (m *testMocks) mockRequest(method, path string, status int, response interf
 		}
 		http.Error(w, fmt.Sprintf("%s %s was not mocked (%s %s was)", r.Method, r.URL.String(), method, path), http.StatusInternalServerError)
 	}))
+}
+
+func newTestClient(c *http.Client, apiKey string, m *testMocks) *client {
+	client := New(c, apiKey)
+	if m != nil && m.server != nil {
+		client.host = m.server.URL
+	}
+	return client
+}
+
+func assert(t *testing.T, condition bool, assertionFormat string, values ...interface{}) {
+	if !condition {
+		t.Fatalf(assertionFormat, values...)
+	}
 }

@@ -13,13 +13,13 @@ func (c *client) BusinessSearch(bso *BusinessSearchOptions) (*BusinessSearchResu
 		return nil, errors.New("BusinessSearchOptions provided is not valid. Please see yelp/business_search.go for more details.")
 	}
 	var respBody BusinessSearchResults
-	_, err := c.authedDo(http.MethodGet, businessSearchURL(bso), nil, nil, &respBody)
+	_, err := c.authedDo(http.MethodGet, businessSearchPath(bso), nil, nil, &respBody)
 	return &respBody, err
 }
 
-// businessSearchURL returns the business search URL.
-func businessSearchURL(bso *BusinessSearchOptions) string {
-	return fmt.Sprintf("%s%s?%s", apiHost, businessSearchPath, bso.URLValues().Encode())
+// businessSearchPath returns the business search path with parameters.
+func businessSearchPath(bso *BusinessSearchOptions) string {
+	return fmt.Sprintf("/v3/businesses/search?%s", bso.URLValues().Encode())
 }
 
 // BusinessSearchOptions contains the available parameters for the Business Search API.

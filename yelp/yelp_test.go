@@ -29,12 +29,16 @@ func (m *testMocks) mockRequest(method, path string, status int, response interf
 	}))
 }
 
-func newTestClient(c *http.Client, apiKey string, m *testMocks) *client {
-	client := New(c, apiKey)
+func newTestClient(c *http.Client, apiKey string, m *testMocks) Client {
+	var host string
 	if m != nil && m.server != nil {
-		client.host = m.server.URL
+		host = m.server.URL
 	}
-	return client
+	return &client{
+		Client: c,
+		apiKey: apiKey,
+		host:   host,
+	}
 }
 
 func assert(t *testing.T, condition bool, assertionFormat string, values ...interface{}) {

@@ -26,7 +26,7 @@ type client struct {
 }
 
 // New returns a new Yelp client. The default host is https://api.yelp.com.
-func New(c *http.Client, apiKey string) *client {
+func New(c *http.Client, apiKey string) Client {
 	return &client{
 		Client: c,
 		apiKey: apiKey,

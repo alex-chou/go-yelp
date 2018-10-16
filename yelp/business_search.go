@@ -1,19 +1,20 @@
 package yelp
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 )
 
-// BusinessSearch makes a request given the options passed in.
-func (c *client) BusinessSearch(bso *BusinessSearchOptions) (*BusinessSearchResults, error) {
+// BusinessSearch makes a request given the options provided.
+func (c *client) BusinessSearch(ctx context.Context, bso *BusinessSearchOptions) (*BusinessSearchResults, error) {
 	if !bso.IsValid() {
 		return nil, errors.New("BusinessSearchOptions provided is not valid. Please see yelp/business_search.go for more details.")
 	}
 	var respBody BusinessSearchResults
-	_, err := c.authedDo(http.MethodGet, businessSearchPath(bso), nil, nil, &respBody)
+	_, err := c.authedDo(ctx, http.MethodGet, businessSearchPath(bso), nil, nil, &respBody)
 	return &respBody, err
 }
 
@@ -46,8 +47,8 @@ type BusinessSearchResults struct {
 	Region     Region     `json:"region"`
 }
 
-// IsValid returns true when SearchOptions is not nil, either Location or Coordinates
-// is set, and OpenNow and OpenAt are not both set.
+// IsValid returns true when BusinessSearchOptions is not nil, either Location or
+// Coordinates is set, and OpenNow and OpenAt are not both set.
 func (bso *BusinessSearchOptions) IsValid() bool {
 	return bso != nil && ((bso.Location != nil) != (bso.Coordinates != nil)) &&
 		!(bso.OpenNow != nil && bso.OpenAt != nil)

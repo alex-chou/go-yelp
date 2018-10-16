@@ -1,18 +1,19 @@
 package yelp
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 )
 
 // GetBusiness makes a request given the options provided.
-func (c *client) GetBusiness(gbo *GetBusinessOptions) (*Business, error) {
+func (c *client) GetBusiness(ctx context.Context, gbo *GetBusinessOptions) (*Business, error) {
 	if err := gbo.Validate(); err != nil {
 		return nil, nil
 	}
 	var respBody Business
-	_, err := c.authedDo(http.MethodGet, getBusinessPath(gbo), nil, nil, &respBody)
+	_, err := c.authedDo(ctx, http.MethodGet, getBusinessPath(gbo), nil, nil, &respBody)
 	return &respBody, err
 }
 
@@ -27,7 +28,7 @@ type GetBusinessOptions struct {
 	Locale *string
 }
 
-// Validate returns an error with details when GetBusinessOptions is not valid.
+// Validate returns an error with details when GetBusinessOptions are not valid.
 func (gbo *GetBusinessOptions) Validate() error {
 	switch {
 	case gbo.ID == "":

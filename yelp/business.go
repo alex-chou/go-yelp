@@ -36,12 +36,8 @@ func (gbo *GetBusinessOptions) Validate() error {
 		return errors.New("GetBusinessOptions are unset")
 	case gbo.ID == "":
 		return errors.New("GetBusinessOptions `ID` is not set")
-	case gbo.Locale != nil:
-		if _, ok := ValidLocales[*gbo.Locale]; !ok {
-			return fmt.Errorf("GetBusinessOptions `Locale` is invalid: %s", *gbo.Locale)
-		}
-		// Note: make sure to check other conditions if locale is valid
-		fallthrough
+	case gbo.Locale != nil && ValidateLocale(*gbo.Locale) != nil:
+		return fmt.Errorf("GetBusinessOptions `Locale` is invalid: %s", *gbo.Locale)
 	default:
 		return nil
 	}

@@ -1,8 +1,18 @@
 package yelp
 
-// ValidLocales are the valid locales from the Yelp Fusion API. This list was pulled
+import "fmt"
+
+// ValidateLocale checks if the provided locale is one of Yelp's supported locales.
+func ValidateLocale(locale string) error {
+	if _, ok := validLocales[locale]; !ok {
+		return fmt.Errorf("Invalid locale provided: %s", locale)
+	}
+	return nil
+}
+
+// validLocales are the valid locales from the Yelp Fusion API. This list was pulled
 // from https://www.yelp.com/developers/documentation/v3/supported_locales.
-var ValidLocales = map[string]struct{}{
+var validLocales = map[string]struct{}{
 	"cs_CZ":  struct{}{},
 	"da_DK":  struct{}{},
 	"de_AT":  struct{}{},

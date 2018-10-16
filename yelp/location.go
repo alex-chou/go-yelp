@@ -14,6 +14,11 @@ type Location struct {
 	ZipCode        string   `json:"zip_code"`
 }
 
+// Region defines an area of the businesses.
+type Region struct {
+	Center Coordinates `json:"center"`
+}
+
 // Coordinates defines a location with Latitude and Longitude.
 type Coordinates struct {
 	Latitude  float64 `json:"latitude"`
@@ -26,14 +31,4 @@ func (c Coordinates) URLValues() url.Values {
 	vals.Add("latitude", FloatString(c.Latitude))
 	vals.Add("longitude", FloatString(c.Longitude))
 	return vals
-}
-
-// Region defines an area of the businesses.
-type Region struct {
-	Center Coordinates `json:"center"`
-}
-
-// URLValues returns Region as url.Values.
-func (r Region) URLValues() url.Values {
-	return r.Center.URLValues()
 }

@@ -8,21 +8,6 @@ import (
 	"net/url"
 )
 
-// BusinessSearch makes a request given the options provided.
-func (c *client) BusinessSearch(ctx context.Context, bso *BusinessSearchOptions) (*BusinessSearchResults, error) {
-	if err := bso.Validate(); err != nil {
-		return nil, err
-	}
-	var respBody BusinessSearchResults
-	_, err := c.authedDo(ctx, http.MethodGet, businessSearchPath(bso), nil, nil, &respBody)
-	return &respBody, err
-}
-
-// businessSearchPath returns the business search path with parameters.
-func businessSearchPath(bso *BusinessSearchOptions) string {
-	return fmt.Sprintf("/v3/businesses/search?%s", bso.URLValues().Encode())
-}
-
 // BusinessSearchOptions contains the available parameters for the Business Search API.
 type BusinessSearchOptions struct {
 	Term        *string
@@ -45,6 +30,21 @@ type BusinessSearchResults struct {
 	Total      int64      `json:"total"`
 	Businesses []Business `json:"businesses"`
 	Region     Region     `json:"region"`
+}
+
+// BusinessSearch makes a request given the options provided.
+func (c *client) BusinessSearch(ctx context.Context, bso *BusinessSearchOptions) (*BusinessSearchResults, error) {
+	if err := bso.Validate(); err != nil {
+		return nil, err
+	}
+	var respBody BusinessSearchResults
+	_, err := c.authedDo(ctx, http.MethodGet, businessSearchPath(bso), nil, nil, &respBody)
+	return &respBody, err
+}
+
+// businessSearchPath returns the business search path with parameters.
+func businessSearchPath(bso *BusinessSearchOptions) string {
+	return fmt.Sprintf("/v3/businesses/search?%s", bso.URLValues().Encode())
 }
 
 // Validate returns an error with deteails when BusinessSearchOptions are not valid.

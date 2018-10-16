@@ -11,5 +11,5 @@ test_coverage:
 	go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out
 
 example:
-	# Run example with provided API key. Usage: make example api_key=my_test_api_key
+	# Run example with the provided API key. Usage: make example api_key=my_test_api_key
 	API_KEY=$(api_key) go run example/main.go

@@ -31,6 +31,8 @@ type GetBusinessOptions struct {
 // Validate returns an error with details when GetBusinessOptions are not valid.
 func (gbo *GetBusinessOptions) Validate() error {
 	switch {
+	case gbo == nil:
+		return errors.New("GetBusinessOptions are unset")
 	case gbo.ID == "":
 		return errors.New("GetBusinessOptions `ID` is not set")
 	case gbo.Locale != nil:
@@ -38,8 +40,10 @@ func (gbo *GetBusinessOptions) Validate() error {
 			return fmt.Errorf("GetBusinessOptions `Locale` is invalid: %s", *gbo.Locale)
 		}
 		// Note: make sure to check other conditions if locale is valid
+		fallthrough
+	default:
+		return nil
 	}
-	return nil
 }
 
 // Category describes a business.

@@ -10,8 +10,8 @@ import (
 
 // BusinessSearch makes a request given the options provided.
 func (c *client) BusinessSearch(ctx context.Context, bso *BusinessSearchOptions) (*BusinessSearchResults, error) {
-	if !bso.IsValid() {
-		return nil, errors.New("BusinessSearchOptions provided is not valid. Please see yelp/business_search.go for more details.")
+	if err := bso.Validate(); err != nil {
+		return nil, err
 	}
 	var respBody BusinessSearchResults
 	_, err := c.authedDo(ctx, http.MethodGet, businessSearchPath(bso), nil, nil, &respBody)
@@ -47,11 +47,20 @@ type BusinessSearchResults struct {
 	Region     Region     `json:"region"`
 }
 
+// Validate returns an error with deteails when BusinessSearchOptions are not valid.
 // IsValid returns true when BusinessSearchOptions is not nil, either Location or
 // Coordinates is set, and OpenNow and OpenAt are not both set.
-func (bso *BusinessSearchOptions) IsValid() bool {
-	return bso != nil && ((bso.Location != nil) != (bso.Coordinates != nil)) &&
-		!(bso.OpenNow != nil && bso.OpenAt != nil)
+func (bso *BusinessSearchOptions) Validate() error {
+	switch {
+	case bso == nil:
+		return errors.New("BusinessSearchOptions are unset")
+	case (bso.Location == nil) == (bso.Coordinates == nil):
+		return errors.New("BusinessSearchOptions must set either `Location` or `Coordinates`")
+	case bso.OpenNow != nil && bso.OpenAt != nil:
+		return errors.New("BusinessSearchOptions should not set both `OpenNow` and `OpenAt`")
+	default:
+		return nil
+	}
 }
 
 // URLValues returns SearchOptions as url.Values.

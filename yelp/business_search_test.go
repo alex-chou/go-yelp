@@ -1,6 +1,7 @@
 package yelp
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"reflect"
@@ -9,11 +10,12 @@ import (
 )
 
 func TestBusinessSearch(t *testing.T) {
+	ctx := context.Background()
 	mocks := &testMocks{}
 	options := &BusinessSearchOptions{}
 	t.Run("invalid options", func(t *testing.T) {
 		client := newTestClient(nil, "API_KEY", mocks)
-		_, err := client.BusinessSearch(options)
+		_, err := client.BusinessSearch(ctx, options)
 		assert(t, err != nil, "Expected an error when options are invalid")
 	})
 
@@ -22,7 +24,7 @@ func TestBusinessSearch(t *testing.T) {
 		mocks.mockRequest(http.MethodGet, businessSearchPath(options), http.StatusInternalServerError, errors.New("Internal server error"))
 		client := newTestClient(mocks.server.Client(), "API_KEY", mocks)
 
-		_, err := client.BusinessSearch(options)
+		_, err := client.BusinessSearch(ctx, options)
 		assert(t, err != nil, "Expected an error when request fails")
 	})
 
@@ -32,13 +34,13 @@ func TestBusinessSearch(t *testing.T) {
 		mocks.mockRequest(http.MethodGet, businessSearchPath(options), http.StatusOK, expected)
 		client := newTestClient(mocks.server.Client(), "API_KEY", mocks)
 
-		results, err := client.BusinessSearch(options)
+		results, err := client.BusinessSearch(ctx, options)
 		assert(t, err == nil, "Expected no error (%v) when request succeeds", err)
 		assert(t, reflect.DeepEqual(*results, expected), "Results (%v) did not match expected (%v)", results, expected)
 	})
 }
 
-func TestIsValid(t *testing.T) {
+func TestValidate(t *testing.T) {
 	t.Run("Location and Coordinates are set", func(t *testing.T) {
 		options := BusinessSearchOptions{
 			Location: StringPointer("Kanto"),
@@ -47,7 +49,7 @@ func TestIsValid(t *testing.T) {
 				Latitude:  3.22,
 			},
 		}
-		assert(t, !options.IsValid(), "Location and Coordinates set should not be valid")
+		assert(t, options.Validate() != nil, "Location and Coordinates set should error")
 	})
 
 	t.Run("OpenNow and OpenAt are set", func(t *testing.T) {
@@ -56,14 +58,14 @@ func TestIsValid(t *testing.T) {
 			OpenNow:  BoolPointer(true),
 			OpenAt:   Int64Pointer(int64(time.Now().Second())),
 		}
-		assert(t, !options.IsValid(), "OpenNow and OpenAt set should not be valid")
+		assert(t, options.Validate() != nil, "OpenNow and OpenAt set should error")
 	})
 
 	t.Run("Only Location is set", func(t *testing.T) {
 		options := BusinessSearchOptions{
 			Location: StringPointer("Johto"),
 		}
-		assert(t, options.IsValid(), "Location set should be valid")
+		assert(t, options.Validate() == nil, "Location set should not error")
 	})
 
 	t.Run("Only Coordinates is set", func(t *testing.T) {
@@ -73,7 +75,7 @@ func TestIsValid(t *testing.T) {
 				Latitude:  3.14159,
 			},
 		}
-		assert(t, options.IsValid(), "Coordinates set should be valid")
+		assert(t, options.Validate() == nil, "Coordinates set should not error")
 	})
 
 	t.Run("OpenNow is set", func(t *testing.T) {
@@ -81,7 +83,7 @@ func TestIsValid(t *testing.T) {
 			Location: StringPointer("Unova"),
 			OpenNow:  BoolPointer(true),
 		}
-		assert(t, options.IsValid(), "OpenNow set should be valid")
+		assert(t, options.Validate() == nil, "OpenNow set should not error")
 	})
 
 	t.Run("Only OpenAt is set", func(t *testing.T) {
@@ -89,7 +91,7 @@ func TestIsValid(t *testing.T) {
 			Location: StringPointer("Alola"),
 			OpenAt:   Int64Pointer(int64(time.Now().Second())),
 		}
-		assert(t, options.IsValid(), "OpenAt set should be valid")
+		assert(t, options.Validate() == nil, "OpenAt set should not error")
 	})
 }
 

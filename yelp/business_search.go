@@ -48,8 +48,6 @@ type BusinessSearchResults struct {
 }
 
 // Validate returns an error with deteails when BusinessSearchOptions are not valid.
-// IsValid returns true when BusinessSearchOptions is not nil, either Location or
-// Coordinates is set, and OpenNow and OpenAt are not both set.
 func (bso *BusinessSearchOptions) Validate() error {
 	switch {
 	case bso == nil:

@@ -47,9 +47,7 @@ func (c *client) authedDo(ctx context.Context, method string, path string, body 
 	}
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 
-	req.WithContext(ctx)
-
-	resp, err := c.Do(req)
+	resp, err := c.Do(req.WithContext(ctx))
 	if err != nil {
 		return resp, err
 	}

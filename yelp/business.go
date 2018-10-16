@@ -11,7 +11,7 @@ import (
 // GetBusiness makes a request given the options provided.
 func (c *client) GetBusiness(ctx context.Context, gbo *GetBusinessOptions) (*Business, error) {
 	if err := gbo.Validate(); err != nil {
-		return nil, nil
+		return nil, err
 	}
 	var respBody Business
 	_, err := c.authedDo(ctx, http.MethodGet, getBusinessPath(gbo), nil, nil, &respBody)

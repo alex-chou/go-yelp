@@ -40,122 +40,130 @@ func TestBusinessSearch(t *testing.T) {
 	})
 }
 
-func TestValidate(t *testing.T) {
-	t.Run("Location and Coordinates are set", func(t *testing.T) {
-		options := BusinessSearchOptions{
-			Location: StringPointer("Kanto"),
-			Coordinates: &Coordinates{
-				Longitude: 31.54,
-				Latitude:  3.22,
-			},
-		}
-		assert(t, options.Validate() != nil, "Location and Coordinates set should error")
+func TestBusinessSearchOptions(t *testing.T) {
+	t.Run("Validate", func(t *testing.T) {
+		var options *BusinessSearchOptions
+		t.Run("BusinessSearchOptions are unset", func(t *testing.T) {
+			options = nil
+			assert(t, options.Validate() != nil, "Empty options should error")
+		})
+
+		t.Run("Location and Coordinates are set", func(t *testing.T) {
+			options = &BusinessSearchOptions{
+				Location: StringPointer("Kanto"),
+				Coordinates: &Coordinates{
+					Longitude: 31.54,
+					Latitude:  3.22,
+				},
+			}
+			assert(t, options.Validate() != nil, "Location and Coordinates set should error")
+		})
+
+		t.Run("OpenNow and OpenAt are set", func(t *testing.T) {
+			options = &BusinessSearchOptions{
+				Location: StringPointer("Hoenn"),
+				OpenNow:  BoolPointer(true),
+				OpenAt:   Int64Pointer(int64(time.Now().Second())),
+			}
+			assert(t, options.Validate() != nil, "OpenNow and OpenAt set should error")
+		})
+
+		t.Run("Only Location is set", func(t *testing.T) {
+			options = &BusinessSearchOptions{
+				Location: StringPointer("Johto"),
+			}
+			assert(t, options.Validate() == nil, "Location set should not error")
+		})
+
+		t.Run("Only Coordinates is set", func(t *testing.T) {
+			options = &BusinessSearchOptions{
+				Coordinates: &Coordinates{
+					Longitude: 20.17,
+					Latitude:  3.14159,
+				},
+			}
+			assert(t, options.Validate() == nil, "Coordinates set should not error")
+		})
+
+		t.Run("OpenNow is set", func(t *testing.T) {
+			options = &BusinessSearchOptions{
+				Location: StringPointer("Unova"),
+				OpenNow:  BoolPointer(true),
+			}
+			assert(t, options.Validate() == nil, "OpenNow set should not error")
+		})
+
+		t.Run("Only OpenAt is set", func(t *testing.T) {
+			options = &BusinessSearchOptions{
+				Location: StringPointer("Alola"),
+				OpenAt:   Int64Pointer(int64(time.Now().Second())),
+			}
+			assert(t, options.Validate() == nil, "OpenAt set should not error")
+		})
 	})
 
-	t.Run("OpenNow and OpenAt are set", func(t *testing.T) {
-		options := BusinessSearchOptions{
-			Location: StringPointer("Hoenn"),
-			OpenNow:  BoolPointer(true),
-			OpenAt:   Int64Pointer(int64(time.Now().Second())),
-		}
-		assert(t, options.Validate() != nil, "OpenNow and OpenAt set should error")
-	})
+	t.Run("URLValues", func(t *testing.T) {
+		var options *BusinessSearchOptions
+		t.Run("BusinessSearchOptions is nil", func(t *testing.T) {
+			options = nil
+			assert(t, len(options.URLValues()) == 0, "Nil options should return empty url values")
+		})
 
-	t.Run("Only Location is set", func(t *testing.T) {
-		options := BusinessSearchOptions{
-			Location: StringPointer("Johto"),
-		}
-		assert(t, options.Validate() == nil, "Location set should not error")
-	})
+		t.Run("Only location is set", func(t *testing.T) {
+			options = &BusinessSearchOptions{
+				Location: StringPointer("Kalos"),
+			}
+			location := options.URLValues().Get("location")
+			assert(t, location == "Kalos", "Location: Expected \"%s\" to equal Kalos", location)
+		})
 
-	t.Run("Only Coordinates is set", func(t *testing.T) {
-		options := BusinessSearchOptions{
-			Coordinates: &Coordinates{
-				Longitude: 20.17,
-				Latitude:  3.14159,
-			},
-		}
-		assert(t, options.Validate() == nil, "Coordinates set should not error")
-	})
+		t.Run("Only open_at is set", func(t *testing.T) {
+			options = &BusinessSearchOptions{
+				OpenAt: Int64Pointer(int64(time.Now().Second())),
+			}
+			openAt := options.URLValues().Get("open_at")
+			assert(t, openAt == IntString(*options.OpenAt), "Location: Expected \"%s\" to equal %d", openAt, *options.OpenAt)
+		})
 
-	t.Run("OpenNow is set", func(t *testing.T) {
-		options := BusinessSearchOptions{
-			Location: StringPointer("Unova"),
-			OpenNow:  BoolPointer(true),
-		}
-		assert(t, options.Validate() == nil, "OpenNow set should not error")
-	})
+		t.Run("All url.Values are set correctly", func(t *testing.T) {
+			options = &BusinessSearchOptions{
+				Coordinates: &Coordinates{
+					Longitude: 132.231,
+					Latitude:  123.57,
+				},
+				Term:       StringPointer("restaurants"),
+				Radius:     Int64Pointer(1987),
+				Categories: StringPointer("chinese"),
+				Locale:     StringPointer("en_US"),
+				Limit:      Int64Pointer(23),
+				Offset:     Int64Pointer(13),
+				SortBy:     StringPointer("rating"),
+				Price:      StringPointer("1,4"),
+				OpenNow:    BoolPointer(false),
+				OpenAt:     Int64Pointer(int64(time.Now().Second())),
+				Attributes: StringPointer("hot_and_new"),
+			}
 
-	t.Run("Only OpenAt is set", func(t *testing.T) {
-		options := BusinessSearchOptions{
-			Location: StringPointer("Alola"),
-			OpenAt:   Int64Pointer(int64(time.Now().Second())),
-		}
-		assert(t, options.Validate() == nil, "OpenAt set should not error")
-	})
-}
-
-func TestURLValues(t *testing.T) {
-	var options *BusinessSearchOptions
-	t.Run("BusinessSearchOptions is nil", func(t *testing.T) {
-		options = nil
-		assert(t, len(options.URLValues()) == 0, "Nil options should return empty url values")
-	})
-
-	t.Run("Only location is set", func(t *testing.T) {
-		options = &BusinessSearchOptions{
-			Location: StringPointer("Kalos"),
-		}
-		location := options.URLValues().Get("location")
-		assert(t, location == "Kalos", "Location: Expected \"%s\" to equal Kalos", location)
-	})
-
-	t.Run("Only open_at is set", func(t *testing.T) {
-		options = &BusinessSearchOptions{
-			OpenAt: Int64Pointer(int64(time.Now().Second())),
-		}
-		openAt := options.URLValues().Get("open_at")
-		assert(t, openAt == IntString(*options.OpenAt), "Location: Expected \"%s\" to equal %d", openAt, *options.OpenAt)
-	})
-
-	t.Run("All url.Values are set correctly", func(t *testing.T) {
-		options = &BusinessSearchOptions{
-			Coordinates: &Coordinates{
-				Longitude: 132.231,
-				Latitude:  123.57,
-			},
-			Term:       StringPointer("restaurants"),
-			Radius:     Int64Pointer(1987),
-			Categories: StringPointer("chinese"),
-			Locale:     StringPointer("en_US"),
-			Limit:      Int64Pointer(23),
-			Offset:     Int64Pointer(13),
-			SortBy:     StringPointer("rating"),
-			Price:      StringPointer("1,4"),
-			OpenNow:    BoolPointer(false),
-			OpenAt:     Int64Pointer(int64(time.Now().Second())),
-			Attributes: StringPointer("hot_and_new"),
-		}
-
-		vals := options.URLValues()
-		for k, _ := range vals {
-			v := vals.Get(k)
-			switch k {
-			case "longitude":
-				assert(t, v == "132.231", "Longitude: Expected %s to equal 132.231", v)
-			case "latitude":
-				if v != "123.57" {
-					t.Fatalf("Latitude: Expected %s to equal 123.57", v)
-				}
-			case "location":
-				if v != "" {
-					t.Fatalf("Location: Expected \"%s\" to equal \"\"", v)
-				}
-			case "term":
-				if v != "restaurants" {
-					t.Fatalf("Term: Expected \"%s\" to equal \"restaurants\"", v)
+			vals := options.URLValues()
+			for k, _ := range vals {
+				v := vals.Get(k)
+				switch k {
+				case "longitude":
+					assert(t, v == "132.231", "Longitude: Expected %s to equal 132.231", v)
+				case "latitude":
+					if v != "123.57" {
+						t.Fatalf("Latitude: Expected %s to equal 123.57", v)
+					}
+				case "location":
+					if v != "" {
+						t.Fatalf("Location: Expected \"%s\" to equal \"\"", v)
+					}
+				case "term":
+					if v != "restaurants" {
+						t.Fatalf("Term: Expected \"%s\" to equal \"restaurants\"", v)
+					}
 				}
 			}
-		}
+		})
 	})
 }

@@ -1,19 +1,20 @@
 package yelp
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 )
 
-// BusinessSearch makes a request given the options passed in.
-func (c *client) BusinessSearch(bso *BusinessSearchOptions) (*BusinessSearchResults, error) {
-	if !bso.IsValid() {
-		return nil, errors.New("BusinessSearchOptions provided is not valid. Please see yelp/business_search.go for more details.")
+// BusinessSearch makes a request given the options provided.
+func (c *client) BusinessSearch(ctx context.Context, bso *BusinessSearchOptions) (*BusinessSearchResults, error) {
+	if err := bso.Validate(); err != nil {
+		return nil, err
 	}
 	var respBody BusinessSearchResults
-	_, err := c.authedDo(http.MethodGet, businessSearchPath(bso), nil, nil, &respBody)
+	_, err := c.authedDo(ctx, http.MethodGet, businessSearchPath(bso), nil, nil, &respBody)
 	return &respBody, err
 }
 
@@ -46,20 +47,27 @@ type BusinessSearchResults struct {
 	Region     Region     `json:"region"`
 }
 
-// IsValid returns true when SearchOptions is not nil, either Location or Coordinates
-// is set, and OpenNow and OpenAt are not both set.
-func (bso *BusinessSearchOptions) IsValid() bool {
-	return bso != nil && ((bso.Location != nil) != (bso.Coordinates != nil)) &&
-		!(bso.OpenNow != nil && bso.OpenAt != nil)
+// Validate returns an error with deteails when BusinessSearchOptions are not valid.
+func (bso *BusinessSearchOptions) Validate() error {
+	switch {
+	case bso == nil:
+		return errors.New("BusinessSearchOptions are unset")
+	case (bso.Location == nil) == (bso.Coordinates == nil):
+		return errors.New("BusinessSearchOptions must set either `Location` or `Coordinates`")
+	case bso.OpenNow != nil && bso.OpenAt != nil:
+		return errors.New("BusinessSearchOptions should not set both `OpenNow` and `OpenAt`")
+	default:
+		return nil
+	}
 }
 
-// URLValues returns SearchOptions as url.Values.
+// URLValues returns BusinessSearchOptions as url.Values.
 func (bso *BusinessSearchOptions) URLValues() url.Values {
-	vals := url.Values{}
 	if bso == nil {
-		return vals
+		return nil
 	}
 
+	vals := url.Values{}
 	if bso.Coordinates != nil {
 		vals = bso.Coordinates.URLValues()
 	} else if bso.Location != nil {

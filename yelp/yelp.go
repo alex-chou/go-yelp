@@ -1,6 +1,7 @@
 package yelp
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,7 +14,8 @@ import (
 
 // Client defines the current available Yelp API requests that can be made.
 type Client interface {
-	BusinessSearch(*BusinessSearchOptions) (BusinessSearchResults, error)
+	BusinessSearch(context.Context, *BusinessSearchOptions) (*BusinessSearchResults, error)
+	GetBusiness(context.Context, *GetBusinessOptions) (*Business, error)
 }
 
 // client implements the Client interface.
@@ -24,7 +26,7 @@ type client struct {
 }
 
 // New returns a new Yelp client. The default host is https://api.yelp.com.
-func New(c *http.Client, apiKey string) *client {
+func New(c *http.Client, apiKey string) Client {
 	return &client{
 		Client: c,
 		apiKey: apiKey,
@@ -34,7 +36,7 @@ func New(c *http.Client, apiKey string) *client {
 
 // authedDo sets the Authorization header to the api key provided to the client .
 // The response is decoded into v.
-func (c *client) authedDo(method string, path string, body io.Reader, headers map[string]string, v interface{}) (*http.Response, error) {
+func (c *client) authedDo(ctx context.Context, method string, path string, body io.Reader, headers map[string]string, v interface{}) (*http.Response, error) {
 	req, err := http.NewRequest(method, fmt.Sprintf("%s%s", c.host, path), body)
 	if err != nil {
 		return nil, err
@@ -45,7 +47,7 @@ func (c *client) authedDo(method string, path string, body io.Reader, headers ma
 	}
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 
-	resp, err := c.Do(req)
+	resp, err := c.Do(req.WithContext(ctx))
 	if err != nil {
 		return resp, err
 	}

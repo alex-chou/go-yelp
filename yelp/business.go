@@ -33,13 +33,13 @@ type Business struct {
 	Transactions []string    `json:"transactions"`
 
 	// The fields below are only returned by the Get Business API.
-	Hours     []Hours  `json:"hours"`
-	Alias     *string  `json:"alias"`
-	IsClaimed *bool    `json:"is_claimed"`
-	Photos    []string `json:"photos"`
+	Hours     []Hours  `json:"hours,omitempty"`
+	Alias     *string  `json:"alias,omitempty"`
+	IsClaimed *bool    `json:"is_claimed,omitempty"`
+	Photos    []string `json:"photos,omitempty"`
 
 	// The fields below are only available for Yelp Fusion VIP clients.
-	Attributes map[string]interface{} `json:"attributes"`
+	Attributes map[string]interface{} `json:"attributes,omitempty"`
 }
 
 // Category describes a business.

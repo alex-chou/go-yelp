@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 // GetBusiness makes a request given the options provided.
@@ -19,7 +20,7 @@ func (c *client) GetBusiness(ctx context.Context, gbo *GetBusinessOptions) (*Bus
 
 // getBusinessPath returns the business details path.
 func getBusinessPath(gbo *GetBusinessOptions) string {
-	return fmt.Sprintf("/v3/businesses/%s", gbo.ID)
+	return fmt.Sprintf("/v3/businesses/%s?%s", gbo.ID, gbo.URLValues().Encode())
 }
 
 // GetBusinessOptions contains the available parameters for the Get Business API.
@@ -44,6 +45,19 @@ func (gbo *GetBusinessOptions) Validate() error {
 	default:
 		return nil
 	}
+}
+
+// URLValues returns GetBusinessOptions as url.Values.
+func (gbo *GetBusinessOptions) URLValues() url.Values {
+	if gbo == nil {
+		return nil
+	}
+
+	vals := url.Values{}
+	if gbo.Locale != nil {
+		vals.Add("locale", *gbo.Locale)
+	}
+	return vals
 }
 
 // Category describes a business.

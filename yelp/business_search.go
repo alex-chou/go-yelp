@@ -61,13 +61,13 @@ func (bso *BusinessSearchOptions) Validate() error {
 	}
 }
 
-// URLValues returns SearchOptions as url.Values.
+// URLValues returns BusinessSearchOptions as url.Values.
 func (bso *BusinessSearchOptions) URLValues() url.Values {
-	vals := url.Values{}
 	if bso == nil {
-		return vals
+		return nil
 	}
 
+	vals := url.Values{}
 	if bso.Coordinates != nil {
 		vals = bso.Coordinates.URLValues()
 	} else if bso.Location != nil {
